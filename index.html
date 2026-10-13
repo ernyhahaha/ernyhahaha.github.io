@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cómo usar la IA: pregunta mejor, obtén mejores respuestas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,600;1,400&family=Schibsted+Grotesk:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F3FA;--ink:#191B3A;--mute:#555874;--line:#D5D3E8;--acc:#3347D6;--tint:#E6E8FF;--bad:#B3472F;--onacc:#fff;
+  --display:"Schibsted Grotesk","Trebuchet MS",system-ui,sans-serif;
+  --body:"Newsreader",Georgia,"Times New Roman",serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg:#12132B;--ink:#E9E9F7;--mute:#A5A8C8;--line:#2C2F55;--acc:#9AA6FF;--tint:#23265A;--bad:#FF8E7A;--onacc:#12132B}
+}
+:root[data-theme="dark"]{--bg:#12132B;--ink:#E9E9F7;--mute:#A5A8C8;--line:#2C2F55;--acc:#9AA6FF;--tint:#23265A;--bad:#FF8E7A;--onacc:#12132B}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1.2rem/1.6 var(--body)}
+.wrap{max-width:820px;margin:0 auto;padding:0 1.25rem}
+h1,h2,h3{font-family:var(--display);margin:0}
+h1{font-size:clamp(2.1rem,6vw,3.4rem);font-weight:800;line-height:1.05;letter-spacing:-.025em}
+h2{font-size:clamp(1.5rem,3.5vw,2rem);font-weight:800;line-height:1.15;letter-spacing:-.015em;margin-bottom:1.25rem}
+h3{font-size:1.1rem;font-weight:600;line-height:1.3}
+p{margin:0 0 1rem;max-width:62ch}
+:focus-visible{outline:3px solid var(--acc);outline-offset:3px;border-radius:3px}
+
+/* Hero: la frase editable es el prompt */
+.hero{padding:3.5rem 0 3.5rem}
+.lead{color:var(--mute);margin:1.25rem 0 2.25rem}
+.prompt{font-size:clamp(1.35rem,3.4vw,1.9rem);line-height:1.75;margin:0 0 1.5rem}
+.slot{background:var(--tint);border-bottom:2px solid var(--acc);padding:.05em .25em;border-radius:4px 4px 0 0;cursor:text}
+.slot:empty::before{content:attr(data-ph);color:var(--mute);font-style:italic}
+select.slot{font:inherit;color:inherit;border-top:0;border-left:0;border-right:0;max-width:100%;cursor:pointer}
+.hint{font-size:1rem;color:var(--mute);margin-bottom:1.25rem}
+button{font:600 1rem var(--display);background:var(--acc);color:var(--onacc);border:0;border-radius:6px;padding:.75rem 1.25rem;cursor:pointer}
+
+/* Secciones */
+section{padding:3.25rem 0;border-top:1px solid var(--line)}
+.compare{display:grid;gap:1.5rem}
+.compare div{padding-left:1.25rem;border-left:4px solid var(--line)}
+.compare .bad{border-left-color:var(--bad)}
+.compare .good{border-left-color:var(--acc)}
+.compare h3{margin-bottom:.4rem}
+.compare p{margin:0;font-style:italic}
+.after{margin:1.5rem 0 0}
+.habits{margin:0;display:grid;gap:1.6rem}
+.habits dt{margin-bottom:.15rem}
+.habits dd{margin:0;color:var(--mute)}
+.note{margin-top:2.25rem;padding:1rem 1.25rem;background:var(--tint);border-radius:6px;max-width:62ch}
+.note p{margin:0}
+footer{padding:2rem 0 3rem;color:var(--mute);font-size:1rem;border-top:1px solid var(--line)}
+
+@media (min-width:760px){
+  .compare{grid-template-columns:1fr 1fr;gap:2.5rem}
+  .habits{grid-template-columns:15rem 1fr;gap:1.6rem 2rem}
+  .habits dd{margin-top:0}
+}
+@media (prefers-reduced-motion:no-preference){
+  button{transition:transform .12s}
+  button:active{transform:scale(.97)}
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="hero">
+    <h1>Pregunta mejor y la IA responderá mejor</h1>
+    <p class="lead">Una IA no adivina lo que necesitas. Cuanto más claro le expliques quién eres, qué quieres y cómo lo quieres, más útil será lo que te conteste. Aquí abajo tienes un prompt completo: cambia lo subrayado por lo tuyo.</p>
+
+    <p class="prompt" id="prompt">
+      Actúa como <span class="slot" id="rol" contenteditable="true" role="textbox" aria-label="Papel de la IA" data-ph="un papel">profesor de programación paciente</span>.
+      Necesito <span class="slot" id="tarea" contenteditable="true" role="textbox" aria-label="Qué necesitas" data-ph="tu tarea">que me expliques qué es un bucle for con dos ejemplos</span>.
+      Mi contexto: <span class="slot" id="ctx" contenteditable="true" role="textbox" aria-label="Tu contexto" data-ph="quién eres y qué sabes">soy estudiante de DAW, conozco HTML y CSS, pero empiezo con JavaScript</span>.
+      Quiero la respuesta en
+      <select class="slot" id="fmt" aria-label="Formato de la respuesta">
+        <option>explicación corta con código comentado</option>
+        <option>lista de pasos numerados</option>
+        <option>tabla comparativa</option>
+        <option>resumen de cinco líneas</option>
+      </select>.
+      Si te falta información, pregúntame antes de responder.
+    </p>
+    <p class="hint">Haz clic en cualquier parte subrayada y escribe encima.</p>
+    <button id="copy" type="button">Copiar prompt</button>
+  </header>
+
+  <section>
+    <h2>Un prompt flojo y uno bueno</h2>
+    <div class="compare">
+      <div class="bad">
+        <h3>Flojo</h3>
+        <p>Hazme una web.</p>
+      </div>
+      <div class="good">
+        <h3>Bueno</h3>
+        <p>Soy estudiante de DAW. Hazme una página de presentación personal con HTML, CSS y JavaScript sin librerías. Que se vea bien en móvil y explica cada parte del código con comentarios.</p>
+      </div>
+    </div>
+    <p class="after">El segundo dice quién eres, qué herramientas usar, qué requisitos tiene el resultado y cómo debe explicarse. La IA ya no tiene que inventar nada de eso.</p>
+  </section>
+
+  <section>
+    <h2>Cinco hábitos que funcionan</h2>
+    <dl class="habits">
+      <dt><h3>Da contexto</h3></dt>
+      <dd>Cuenta qué nivel tienes, para qué lo necesitas y qué has probado ya.</dd>
+      <dt><h3>Pide un formato concreto</h3></dt>
+      <dd>Lista, tabla, código comentado o resumen corto. Si no lo pides, elige ella.</dd>
+      <dt><h3>Trata la primera respuesta como un borrador</h3></dt>
+      <dd>Pide cambios concretos: "más corto", "con un ejemplo real", "sin librerías".</dd>
+      <dt><h3>Pide el porqué, no solo el resultado</h3></dt>
+      <dd>Si estás aprendiendo, pide que te explique cada paso. Copiar sin entender no sirve en un examen.</dd>
+      <dt><h3>Comprueba lo importante</h3></dt>
+      <dd>La IA puede equivocarse en datos, fechas, enlaces y código. Prueba el código y contrasta lo que de verdad importe.</dd>
+    </dl>
+    <div class="note">
+      <p>No pegues contraseñas, claves de API ni datos personales de otras personas en ningún chat de IA.</p>
+    </div>
+  </section>
+
+  <footer>Hecho con HTML, CSS y JavaScript, sin librerías.</footer>
+</main>
+
+<script>
+(function(){
+  var $ = function(id){return document.getElementById(id)};
+  var rol=$('rol'), tarea=$('tarea'), ctx=$('ctx'), fmt=$('fmt'), btn=$('copy');
+
+  // Los campos editables aceptan solo texto plano y una sola línea
+  [rol,tarea,ctx].forEach(function(el){
+    el.addEventListener('paste',function(e){
+      e.preventDefault();
+      var t=(e.clipboardData||window.clipboardData).getData('text').replace(/\s+/g,' ');
+      document.execCommand('insertText',false,t);
+    });
+    el.addEventListener('keydown',function(e){
+      if(e.key==='Enter'){e.preventDefault();el.blur()}
+    });
+  });
+
+  function compose(){
+    var parts=[];
+    var r=rol.textContent.trim(), t=tarea.textContent.trim(), c=ctx.textContent.trim();
+    if(r) parts.push('Actúa como '+r+'.');
+    if(t) parts.push('Necesito '+t+'.');
+    if(c) parts.push('Mi contexto: '+c+'.');
+    parts.push('Quiero la respuesta en '+fmt.value+'.');
+    parts.push('Si te falta información, pregúntame antes de responder.');
+    return parts.join(' ');
+  }
+
+  function done(){
+    btn.textContent='Prompt copiado';
+    setTimeout(function(){btn.textContent='Copiar prompt'},1800);
+  }
+  function fallback(text){
+    var ta=document.createElement('textarea');
+    ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');done()}
+    catch(e){btn.textContent='No se pudo copiar'}
+    document.body.removeChild(ta);
+  }
+
+  btn.addEventListener('click',function(){
+    var text=compose();
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done,function(){fallback(text)});
+    }else{fallback(text)}
+  });
+})();
+</script>
+</body>
+</html>
